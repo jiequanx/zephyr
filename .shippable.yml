@@ -44,7 +44,8 @@ build:
           fi;
       - >
           if [ "$RUN_COMPLIANCE" = "1" -a "$IS_PULL_REQUEST" = "true" ]; then
-            export COMMIT_RANGE=origin/${PULL_REQUEST_BASE_BRANCH}..${COMMIT}
+            ARCH="-a x86";
+            export COMMIT_RANGE=origin/${PULL_REQUEST_BASE_BRANCH}..${COMMIT};
             echo "Building a Pull Request";
             echo "- Building Documentation";
             echo "Commit range:" ${COMMIT_RANGE}
@@ -55,6 +56,8 @@ build:
             fi;
             echo "- Verify commit message and coding style";
             ./scripts/ci/check-compliance.py || true;
+          elif [ "$IS_PULL_REQUEST" = "true" ]; then
+            ARCH="-a arm -a arc -a nios2 -a riscv32";
           fi;
       - >
           if [ "$JOB_TRIGGERED_BY_NAME" = "daily-verify-asserts" ]; then
@@ -77,6 +80,7 @@ build:
           fi;
       - >
           if [ "$JOB_TRIGGERED_BY_NAME" != "code-scan" ]; then
+            echo $ARCH;
             ./scripts/sanitycheck ${PLATFORMS} ${ARCH} ${COVERAGE} ${SANITYCHECK_OPTIONS} || ./scripts/sanitycheck ${PLATFORMS} ${ARCH} ${COVERAGE} ${SANITYCHECK_OPTIONS_RETRY};
           fi
       - ccache -s
